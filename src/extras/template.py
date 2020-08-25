@@ -23,16 +23,16 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from copy import copy
-from functools import partial
+import functools
 from inspect import getargspec
 
 from django.template import Context
 try:
-    from django.template.base import generic_tag_compiler, TagHelperNode, Template
+    from django.template.base import generic_tag_compiler, InclusionNode, Template
 except ImportError:
     # Django 1.9+
     from django.template.base import Template
-    from django.template.library import parse_bits, TagHelperNode
+    from django.template.library import parse_bits, InclusionNode
 
     # copied from Django 1.8 source, since this function was removed in 1.9
     def generic_tag_compiler(parser, token, params, varargs, varkw, defaults,
@@ -130,7 +130,7 @@ def _render_cache_key_set_mapper(params):
 #
 # CHANGED: changed self to register in the function definition, and changed the
 # function name to cache_inclusion_tag
-def cache_inclusion_tag(register, file_name, takes_context=False, name=None):
+def cache_inclusion_tag(register, filename, takes_context=False, name=None):
     """
     Register a callable as an inclusion tag, cachedly.
 
@@ -187,7 +187,8 @@ def cache_inclusion_tag(register, file_name, takes_context=False, name=None):
         # CHANGED: added the following line
         cached_func = cache_function(func, containing_class=None)
 
-        class CachedInclusionNode(TagHelperNode):
+        # CHANGED: Including this here so the caching functions have access to cached_func and params
+        class CachedInclusionNode(InclusionNode):
             # CHANGED: added the following lines, which makes sure that the
             # cache for render_given_args will not depend on self in a
             # nontrivial way.  This is pretty dangerous and we deserve whatever
@@ -239,14 +240,14 @@ def cache_inclusion_tag(register, file_name, takes_context=False, name=None):
 
                 t = context.render_context.get(self)
                 if t is None:
-                    if isinstance(file_name, Template):
-                        t = file_name
-                    elif isinstance(getattr(file_name, 'template', None), Template):
-                        t = file_name.template
-                    elif not isinstance(file_name, six.string_types) and is_iterable(file_name):
-                        t = context.template.engine.select_template(file_name)
+                    if isinstance(self.filename, Template):
+                        t = self.filename
+                    elif isinstance(getattr(self.filename, 'template', None), Template):
+                        t = self.filename.template
+                    elif not isinstance(self.filename, six.string_types) and is_iterable(self.filename):
+                        t = context.template.engine.select_template(self.filename)
                     else:
-                        t = context.template.engine.get_template(file_name)
+                        t = context.template.engine.get_template(self.filename)
                     context.render_context[self] = t
                 # CHANGED: new_context = context.new(_dict) to the following
                 # five lines.  We don't want to copy the context because it
@@ -272,13 +273,21 @@ def cache_inclusion_tag(register, file_name, takes_context=False, name=None):
             render_given_args.depend_on_cache(
                 cached_func, _render_cache_key_set_mapper(params))
 
-        function_name = (name or
-            getattr(func, '_decorated_function', func).__name__)
-        compile_func = partial(generic_tag_compiler,
-            params=params, varargs=varargs, varkw=varkw,
-            defaults=defaults, name=function_name,
-            takes_context=takes_context, node_class=CachedInclusionNode)
-        compile_func.__doc__ = func.__doc__
+        function_name = (name or getattr(func, '_decorated_function', func).__name__)
+
+        # CHANGED: func -> cached_func
+        @functools.wraps(cached_func)
+        def compile_func(parser, token):
+            bits = token.split_contents()[1:]
+            args, kwargs = parse_bits(
+                parser, bits, params, varargs, varkw, defaults,
+                takes_context, function_name,
+            )
+            # CHANGED: InclusionNode -> CachedInclusionNode
+            return CachedInclusionNode(
+                # CHANGED: fun -> cached_func
+                cached_func, takes_context, args, kwargs, filename,
+            )
         # CHANGED: self -> register on the following line
         register.tag(function_name, compile_func)
         # CHANGED: added the following line to allow adding cache dependencies
