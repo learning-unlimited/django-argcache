@@ -1,4 +1,6 @@
 """ Tokens for bulk-deleting things. """
+from __future__ import absolute_import
+from six.moves import range
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -135,7 +137,7 @@ class SingleEntryToken(Token):
     def __init__(self, cache_obj):
         self.cache_obj = cache_obj
         super(SingleEntryToken, self).__init__(name=cache_obj.name + "FAKE",
-                                               provided_params=range(len(cache_obj.params)),
+                                               provided_params=list(range(len(cache_obj.params))),
                                                cache=cache_obj.cache)
 
     def delete_filt(self, filt, send_signal=True):

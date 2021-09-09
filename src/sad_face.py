@@ -1,4 +1,6 @@
 """ Boohoo, the cache is sad... """
+from __future__ import absolute_import
+from __future__ import print_function
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -55,7 +57,7 @@ def warn_if_loaded(subject=DEFAULT_SUBJECT, message=DEFAULT_MESSAGE):
         message += '\n--------\n'
         for line in traceback.format_stack():
             message += line
-        print message
+        print(message)
         mail_admins(subject, message, fail_silently=True)
         return True
     return False

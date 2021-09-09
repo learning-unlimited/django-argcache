@@ -115,15 +115,15 @@ def DerivedField(FieldCls, getter_fn):
                                 elt.save()
                 
                     else:
-                        item = key_set.values()[0]
+                        item = list(key_set.values())[0]
                         ## TODO: The following test doesn't actually work; self.model claims to be an instance of ModelBase, even though we seem to be able to query it
                         #assert type(item) == type(self.model), "Error, passed an item of type %s into a cache-function that only accepts items of type %s" % (str(type(item)), str(type(self.model)))
-                        row = self.model.objects.get(id=key_set.values()[0].id)  ## Get a new instance of this model, so that we don't have to worry about unsaved data in other fields
+                        row = self.model.objects.get(id=list(key_set.values())[0].id)  ## Get a new instance of this model, so that we don't have to worry about unsaved data in other fields
                         new_val = getter_fn(row)
                         if new_val != getattr(row, self.name):
                             setattr(row, self.name, new_val)
                             row.save()
-                except Exception, e:
+                except Exception as e:
                     raise e
                 finally:  ## Put the unlock in a 'finally' block so that it always happens
                     self._derived_reentrant_lock = False

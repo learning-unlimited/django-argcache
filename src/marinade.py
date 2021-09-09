@@ -1,4 +1,6 @@
 """ Converts a set of arguments to a string """
+from __future__ import absolute_import
+from __future__ import print_function
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -43,7 +45,7 @@ def get_containing_class():
 def describe_func(func, class_name=None):
     if hasattr(func, 'im_class'):
         # I don't think we actually hit this case... this is only for bound/unbound member functions
-        return '%s.%s' % (describe_class(func.im_class), func.__name__)
+        return '%s.%s' % (describe_class(func.__self__.__class__), func.__name__)
     else:
         if class_name is None:
             return '%s.%s' % (func.__module__.rstrip('.'), func.__name__)
@@ -60,7 +62,7 @@ def marinade_dish(arg):
         if arg.id is None:
             import random
             # TODO: Make this log something
-            print "PASSING UNSAVED MODEL!!! ERROR!!! CACHING CODE SHOULD NOT BE ENABLED!!!"
+            print("PASSING UNSAVED MODEL!!! ERROR!!! CACHING CODE SHOULD NOT BE ENABLED!!!")
             # Do the right thing anyway
             return str(random.randint(0,999999))
         return str(arg.id)

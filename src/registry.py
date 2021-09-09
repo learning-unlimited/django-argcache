@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import
+from __future__ import print_function
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -39,7 +41,7 @@ def _finalize_caches():
     from .queued import do_all_pending
     do_all_pending()
     if settings.CACHE_DEBUG:
-        print "Initialized caches"
+        print("Initialized caches")
 
 _caches_locked = False
 def caches_locked():

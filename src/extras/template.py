@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -257,7 +258,7 @@ def cache_inclusion_tag(register, filename, takes_context=False, name=None):
                 # require using a plain Context, and copy a whitelisted set of
                 # attrs over, rather than using copy().
                 new_context = Context(_dict)
-                for attr, val in context_attrs.iteritems():
+                for attr, val in six.iteritems(context_attrs):
                     setattr(new_context, attr, val)
                 new_context.render_context = copy(context.render_context)
                 # CHANGED: removed copying the csrf_token over to the
