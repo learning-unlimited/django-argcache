@@ -115,7 +115,9 @@ class ArgCacheDecorator(ArgCache):
     # make bound member functions work...
     def __get__(self, obj, objtype=None):
         """ Python member functions are such hacks... :-D """
-        return types.MethodType(self, obj, objtype)
+        if obj is None:
+            return self
+        return types.MethodType(self, obj)
 
 
 # This is a bit more of a decorator-style name
