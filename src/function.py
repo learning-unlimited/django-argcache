@@ -51,8 +51,7 @@ class ArgCacheDecorator(ArgCache):
             return functools.partial(cls, spec=spec, **kwargs)
         else:
             # Actually applying the decorator
-            return super(ArgCacheDecorator, cls).__new__(
-                cls, func_or_spec, spec=spec, **kwargs)
+            return super(ArgCacheDecorator, cls).__new__(cls)
 
     def __init__(self, func, spec=None, **kwargs):
         """ Wrap func in a ArgCache. """
