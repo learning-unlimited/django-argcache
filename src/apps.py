@@ -39,7 +39,7 @@ class ArgCacheConfig(AppConfig):
             try:
                 importlib.import_module('.caches', app_config.name)
             except ImportError as e:
-                if e.args == ('No module named caches',):
+                if e.args == ('No module named caches',) or e.args == ("No module named '" + app_config.name + ".caches'",):
                     continue
                 raise
 
