@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.db import models
 from argcache.function import cache_function, depend_on_row, ensure_token
 from argcache.key_set import wildcard

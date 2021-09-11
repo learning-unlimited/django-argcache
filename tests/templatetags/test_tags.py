@@ -1,4 +1,5 @@
 """Template tags for unit tests."""
+from __future__ import absolute_import
 from django import template
 from django.template import Template
 from argcache import registry
