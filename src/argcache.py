@@ -462,7 +462,7 @@ class ArgCache(object):
             if Model is None:
                 raise ValueError("Attempting to depend on Model None... this is a pretty dumb thing to do.")
             def delete_cb(sender, instance, **kwargs):
-                if not list(filter(instance)):
+                if not filter(instance):
                     return None
                 new_key_set = selector(instance)
                 if new_key_set is not None:
@@ -500,7 +500,7 @@ class ArgCache(object):
             if method_name is not None:
                 cache_obj = getattr(cache_obj, method_name)
             def delete_cb(sender, key_set, **kwargs):
-                if not list(filter(**key_set)):
+                if not filter(**key_set):
                     return None
                 new_key_set = mapping_func(**key_set)
                 if new_key_set is not None:
@@ -550,7 +550,7 @@ class ArgCache(object):
                     for object in objects:
                         do_delete(object, instance, selector, filter)
             def do_delete(instance, object, selector, filter):
-                if not list(filter(instance, object)):
+                if not filter(instance, object):
                     return None
                 new_key_set = selector(instance, object)
                 if new_key_set is not None:
