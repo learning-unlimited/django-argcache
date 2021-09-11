@@ -1,4 +1,4 @@
-
+from __future__ import unicode_literals
 from __future__ import absolute_import
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"

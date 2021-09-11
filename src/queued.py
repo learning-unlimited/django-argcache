@@ -1,5 +1,6 @@
 """ General object with queuable actions. """
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import six
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
