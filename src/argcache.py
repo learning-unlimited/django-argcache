@@ -230,7 +230,7 @@ class ArgCache(object):
 
     def key(self, arg_list):
         """ Returns a cache key, given a list of arguments. """
-        return self.name + '|' + ':'.join([marinade_dish(arg) for arg in arg_list])
+        return self.name + '|' + ':'.join([str(marinade_dish(arg)) for arg in arg_list])
 
     def _token_keys(self, arg_list):
         """ Returns a list of keys to grab for all the tokens. """
