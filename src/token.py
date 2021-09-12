@@ -94,7 +94,7 @@ class Token(object):
 
     def key_filt(self, filt):
         """ Given filtered arguments, returns a key."""
-        return 'TOKEN__' + self.name + '|' + ':'.join([marinade_dish(arg) for arg in filt])
+        return 'TOKEN__' + self.name + '|' + ':'.join([str(marinade_dish(arg)) for arg in filt])
 
     def delete_key_set(self, key_set, send_signal=True):
         """ Given a filtered set of arguments, deletes things. """
