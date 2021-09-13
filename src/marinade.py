@@ -58,7 +58,7 @@ def marinade_dish(arg):
     if isinstance(arg, QuerySet):
         return marinade_dish(list(arg))
     if isinstance(arg, list):
-        return '[%s]' % ','.join([str(marinade_dish(item)) for item in arg])
+        return '[%s]' % ','.join([marinade_dish(item).decode('UTF-8') for item in arg])
     if isinstance(arg, Model):
         if arg.id is None:
             import random
