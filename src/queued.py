@@ -26,13 +26,12 @@ import types
 
 from django.apps import apps
 from django.db.models import signals
-import six
 
 pending_lookups = {}
 
 def add_lazy_dependency(self, obj, operation):
     """ If obj is a function (thunk), delay operation; otherwise execute immediately. """
-    if isinstance(obj, six.text_type) or isinstance(obj, basestring):
+    if isinstance(obj, basestring):
         app_label, model_name = obj.split(".")
         try:
             # This is a private API, please fix it!
