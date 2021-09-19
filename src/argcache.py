@@ -34,6 +34,7 @@ from .marinade import marinade_dish
 from .registry import register_cache
 from .sad_face import warn_if_loaded
 from .signals import cache_deleted
+import six
 
 __all__ = ['ArgCache']
 
@@ -445,7 +446,7 @@ class ArgCache(object):
             return
         if filter is None:
             filter = lambda instance: True
-        if isinstance(selector, str):
+        if isinstance(selector, str) or isinstance(selector, six.text_type):
             # Special-case this
             selector_str = selector
             selector = lambda instance: {selector_str: instance}
