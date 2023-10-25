@@ -38,7 +38,8 @@ class ArgCacheConfig(AppConfig):
             try:
                 importlib.import_module('.caches', app_config.name)
             except ImportError as e:
-                if e.args == ('No module named caches',):
+                # Works for vanilla python 2.7 and PyPy 2.7 (needed for the time being for GHA)
+                if len(e.args) > 0 and e.args[0].startswith('No module named'):
                     continue
                 raise
 
