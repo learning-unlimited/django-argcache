@@ -25,23 +25,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from copy import copy
 import functools
-from inspect import getargspec
+from inspect import getfullargspec
 
 from django.template import Context
-try:
-    from django.template.base import generic_tag_compiler, InclusionNode, Template
-except ImportError:
-    # Django 1.9+
-    from django.template.base import Template
-    from django.template.library import parse_bits, InclusionNode
+from django.template.base import Template
+from django.template.library import parse_bits, InclusionNode
 
-    # copied from Django 1.8 source, since this function was removed in 1.9
-    def generic_tag_compiler(parser, token, params, varargs, varkw, defaults,
-                             name, takes_context, node_class):
-        bits = token.split_contents()[1:]
-        args, kwargs = parse_bits(parser, bits, params, varargs, varkw,
-                                  defaults, takes_context, name)
-        return node_class(takes_context, args, kwargs)
 from django.utils.itercompat import is_iterable
 from django.utils import six
 
@@ -76,8 +65,8 @@ def _render_cache_key_set_mapper(params):
 # HERE BE DRAGONS!
 #
 # This code is partially copied from the django source for
-# django.template.base.Library.inclusion_tag, and was last updated for Django
-# 1.8.  All changes from the Django source we're copying should be commented
+# django.template.base.library.inclusion_tag, and was last updated for Django
+# 2.0.  All changes from the Django source we're copying should be commented
 # inline with "# CHANGED:" to make this easy to update.
 #
 # The reason we're here in the first place is that just caching a function,
@@ -184,7 +173,7 @@ def cache_inclusion_tag(register, filename, takes_context=False, name=None):
     def dec(func):
         # In our case varargs and varkw had better be None, or else
         # cache_function will fail.
-        params, varargs, varkw, defaults = getargspec(func)
+        params, varargs, varkw, defaults, kwonly, kwonly_defaults, _ = getfullargspec(func)
         # CHANGED: added the following line
         cached_func = cache_function(func, containing_class=None)
 
@@ -282,7 +271,7 @@ def cache_inclusion_tag(register, filename, takes_context=False, name=None):
             bits = token.split_contents()[1:]
             args, kwargs = parse_bits(
                 parser, bits, params, varargs, varkw, defaults,
-                takes_context, function_name,
+                kwonly, kwonly_defaults, takes_context, function_name,
             )
             # CHANGED: InclusionNode -> CachedInclusionNode
             return CachedInclusionNode(
