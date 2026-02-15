@@ -23,7 +23,6 @@ setup(
     ],
     package_dir={
         'argcache': 'src',
-        'argcache.extras': 'src/extras',
     },
     include_package_data=True,
     install_requires=[
