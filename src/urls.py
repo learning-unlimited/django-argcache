@@ -23,11 +23,11 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from django.conf.urls import url
+from django.urls import re_path
 
 from .views import view_all, flush
 
 urlpatterns = [
-    url(r'^view_all/?$', view_all, name='view_all'),
-    url(r'^flush/([0-9]+)/?$', flush, name='flush')
+    re_path(r'^view_all/?$', view_all, name='view_all'),
+    re_path(r'^flush/([0-9]+)/?$', flush, name='flush')
 ]
