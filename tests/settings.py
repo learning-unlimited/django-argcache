@@ -21,20 +21,18 @@ DATABASES = {
 
 ROOT_URLCONF = 'argcache.urls'
 
-TEMPLATE_LOADERS = [
-    'django.template.loaders.app_directories.Loader',
-    'django.template.loaders.eggs.Loader',
-]
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'OPTIONS': {
-            'loaders': TEMPLATE_LOADERS
+            'loaders': [
+                'django.template.loaders.app_directories.Loader',
+            ]
         }
     }
 ]
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 ]

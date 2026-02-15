@@ -22,11 +22,11 @@ setup(
         'argcache.extras',
     ],
     package_dir={
-        'argcache': 'src'
+        'argcache': 'src',
     },
     include_package_data=True,
     install_requires=[
-        'django>=2.0',
+        'django>=3.0',
     ],
     classifiers=[
         'Environment :: Web Environment',

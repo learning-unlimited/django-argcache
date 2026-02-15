@@ -34,7 +34,7 @@ from django.db.models import signals
 from django.conf import settings
 
 from .queued import add_lazy_dependency
-from .token import Token, SingleEntryToken
+from .cache_token import Token, SingleEntryToken
 from .key_set import specifies_key, token_list_for
 from .marinade import marinade_dish
 from .registry import register_cache

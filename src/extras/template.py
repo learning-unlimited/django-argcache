@@ -32,7 +32,7 @@ from django.template.base import Template
 from django.template.library import parse_bits, InclusionNode
 
 from django.utils.itercompat import is_iterable
-from django.utils import six
+import six
 
 from .. import cache_function
 from ..key_set import is_wildcard

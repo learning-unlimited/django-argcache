@@ -15,7 +15,7 @@ class HashTag(models.Model):
 class Article(models.Model):
     headline = models.CharField(max_length=200)
     content = models.TextField()
-    reporter = models.ForeignKey('Reporter', related_name='articles')
+    reporter = models.ForeignKey('Reporter', related_name='articles', on_delete=models.CASCADE)
     hashtags = models.ManyToManyField('HashTag', related_name='articles')
 
     @cache_function([
@@ -35,7 +35,7 @@ class Article(models.Model):
         return self.headline
 
 class Comment(models.Model):
-    article = models.ForeignKey('Article', related_name='comments')
+    article = models.ForeignKey('Article', related_name='comments', on_delete=models.CASCADE)
 
 class Reporter(models.Model):
     first_name = models.CharField(max_length=70)

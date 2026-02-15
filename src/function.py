@@ -70,7 +70,10 @@ class ArgCacheDecorator(ArgCache):
         containing_class = kwargs.pop('containing_class', get_containing_class())
         extra_name = kwargs.pop('extra_name', '')
         name = describe_func(func, containing_class) + extra_name
-        params, varargs, keywords, _ = inspect.getargspec(func)
+        argspec = inspect.getfullargspec(func)
+        params = argspec.args
+        varargs = argspec.varargs
+        keywords = argspec.varkw
         if varargs is not None:
             raise ESPError("ArgCache does not support varargs.")
         if keywords is not None:
