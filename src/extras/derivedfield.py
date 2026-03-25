@@ -133,7 +133,12 @@ def DerivedField(FieldCls, getter_fn):
         # Make Django think we're in the FieldCls for the purpose of migrations
         def deconstruct(self):
             name, path, args, kwargs = super().deconstruct()
-            path = "%s.%s" % (FieldCls.__module__, FieldCls.__name__)
+            # Use the shortest valid import path, matching what Django writes in migrations
+            import django.db.models as models_module
+            if hasattr(models_module, FieldCls.__name__):
+                path = "django.db.models.%s" % FieldCls.__name__
+            else:
+                path = "%s.%s" % (FieldCls.__module__, FieldCls.__qualname__)
             return name, path, args, kwargs
 
     return NewCls
