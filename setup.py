@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-argcache',
-    version='0.2.3',
+    version='0.3',
     license='AGPLv3',
     description='A function-level caching and invalidaton framework for Django.',
     long_description=README,
