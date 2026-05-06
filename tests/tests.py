@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
@@ -12,7 +11,6 @@ from .caches import (get_calls, get_calls_reset, get_squared_calls,
                      set_value, get_value, get_value_slowly)
 from .models import HashTag, Article, Comment, Reporter
 from .templatetags.test_tags import counter, silly_inclusion_tag
-from six.moves import range
 
 
 class CacheTests(TestCase):

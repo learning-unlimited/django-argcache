@@ -1,5 +1,4 @@
-from __future__ import unicode_literals
-import six
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -35,4 +34,4 @@ def force_str(x):
     """
     if isinstance(x, str):
         return x
-    return six.text_type(x).encode('utf8')
+    return str(x).encode('utf8')

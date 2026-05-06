@@ -1,8 +1,5 @@
 """ Tokens for bulk-deleting things. """
-from __future__ import absolute_import
-from __future__ import unicode_literals
-import six
-from six.moves import range
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -95,7 +92,7 @@ class Token(object):
 
     def key_filt(self, filt):
         """ Given filtered arguments, returns a key."""
-        return 'TOKEN__' + self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), six.binary_type) else marinade_dish(arg) for arg in filt])
+        return 'TOKEN__' + self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), bytes) else marinade_dish(arg) for arg in filt])
 
     def delete_key_set(self, key_set, send_signal=True):
         """ Given a filtered set of arguments, deletes things. """

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import os
 TESTS_DIR = os.path.dirname(__file__)
 
