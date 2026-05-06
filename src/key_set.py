@@ -88,7 +88,7 @@ def has_wildcard(lst):
 
 def specifies_key(key_set, key):
     """ Does this key_set have a definite value for key? """
-    return key_set.has_key(key) and not is_wildcard(key_set[key])
+    return key in key_set and not is_wildcard(key_set[key])
 
 def token_list_for(key_set):
     """ Given me a list of interesting arguments for key_set. """

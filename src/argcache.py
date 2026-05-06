@@ -168,7 +168,7 @@ class ArgCache(object):
 
         # Calling in the constructor to avoid duplicates
         if warn_if_loaded():
-            print "Dumping the cache out of paranoia..."
+            print("Dumping the cache out of paranoia...")
             self.delete_all()
         
         self.register()
@@ -176,14 +176,14 @@ class ArgCache(object):
     def _hit_hook(self, arg_list):
         if settings.CACHE_DEBUG:
             old_disabled, self.disabled = self.disabled, True
-            print "Cache Hit! %s on %s" % (self.name, arg_list)
+            print("Cache Hit! %s on %s" % (self.name, arg_list))
             self.disabled = old_disabled
         self.hit_count += 1
 
     def _miss_hook(self, arg_list):
         if settings.CACHE_DEBUG:
             old_disabled, self.disabled = self.disabled, True
-            print "Cache Miss! %s on %s" % (self.name, arg_list)
+            print("Cache Miss! %s on %s" % (self.name, arg_list))
             self.disabled = old_disabled
         self.miss_count += 1
 
@@ -213,7 +213,7 @@ class ArgCache(object):
         if isinstance(param, int):
             # don't do anything if we already have an id
             return param
-        if not self.param_dict.has_key(param):
+        if param not in self.param_dict:
             raise ValueError('Cache %s (params %s) error: %s is not a valid argument' % (self.name, self.param_dict, param))
         return self.param_dict[param]
 
@@ -250,7 +250,7 @@ class ArgCache(object):
         provided_params = [self.index_of_param(param) for param in params]
         provided_params.sort()
         provided_params = tuple(provided_params)
-        if self.token_dict.has_key(provided_params):
+        if provided_params in self.token_dict:
             return self.token_dict[provided_params]
         tname = ':'.join([self.params[i] for i in provided_params])
         tname = self.name + '|' + tname
@@ -267,7 +267,7 @@ class ArgCache(object):
         provided_params.sort()
         provided_params = tuple(provided_params)
 
-        if self.token_dict.has_key(provided_params):
+        if provided_params in self.token_dict:
             return self.token_dict[provided_params]
         # FIXME: Come up with a smarter fallback solution count number of
         # roundings? instead of contains, return a "closeness" heuristic?
@@ -332,7 +332,7 @@ class ArgCache(object):
 
         # regenerate missing tokens
         for tkey, token in zip(token_keys, self.tokens):
-            if not ans_dict.has_key(tkey):
+            if tkey not in ans_dict:
                 ans_dict[tkey] = token.value_args(arg_list)
 
         # gather token values
@@ -360,7 +360,7 @@ class ArgCache(object):
         """ Delete everything in this key_set, rounding up if necessary. """
 
         if settings.CACHE_DEBUG:
-            print "Dumping from", self.name, "keyset", key_set
+            print("Dumping from", self.name, "keyset", key_set)
 
         # TODO: Would be nicer if we could just make a
         # proxy token for the single-element case
@@ -488,7 +488,7 @@ class ArgCache(object):
         # HACK: allow cached methods of models to be specified as strings
         # "app.Model.method"
         method_name = None
-        if isinstance(cache_obj, basestring):
+        if isinstance(cache_obj, str):
             cache_obj, method_name = cache_obj.rsplit(".", 1)
         def resolve_depend_on_cache(cache_obj):
             if method_name is not None:

@@ -1,4 +1,3 @@
-
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -93,46 +92,56 @@ def DerivedField(FieldCls, getter_fn):
 
     class NewCls(FieldCls):
         """ Wrapper class for the %s model-field, giving a field that is automatically updated """ % FieldCls.__name__
-        def __init__(self, *args, **kwargs):
-            super(FieldCls, self).__init__(*args, **kwargs)
+        ## Lock to prevent reentrancy on our handler function
+        _derived_reentrant_lock = False
+        _handler_registered = False
 
-            ## Lock to prevent reentrancy on our handler function
-            self._derived_reentrant_lock = False
-
-            def handler(key_set, **kwargs):
-                assert len(key_set) <= 1, "Error, getter function seems to be cached against more than one argument: %s" % (repr(key_set))
-
-                assert (not self._derived_reentrant_lock), "Trigger cycle detected (A updates B updates C updates A updates B updates ...)!  Aborting to prevent infinite loop."
-                self._derived_reentrant_lock = True
-
-                try:
-                    if len(key_set) == 0:
-                        ## Ok then, the whole cache got dumped; full reset time!
-                        for elt in self.model.objects.all():
-                            new_val = getter_fn(elt)
-                            if new_val != getattr(elt, self.name):
-                                setattr(elt, self.name, new_val)
-                                elt.save()
+        def contribute_to_class(self, cls, name, **kwargs):
+            super().contribute_to_class(cls, name, **kwargs)
+            
+            # Register the handler after the field is attached to the model
+            if not self._handler_registered:
+                self._handler_registered = True
                 
-                    else:
-                        item = key_set.values()[0]
-                        ## TODO: The following test doesn't actually work; self.model claims to be an instance of ModelBase, even though we seem to be able to query it
-                        #assert type(item) == type(self.model), "Error, passed an item of type %s into a cache-function that only accepts items of type %s" % (str(type(item)), str(type(self.model)))
-                        row = self.model.objects.get(id=key_set.values()[0].id)  ## Get a new instance of this model, so that we don't have to worry about unsaved data in other fields
-                        new_val = getter_fn(row)
-                        if new_val != getattr(row, self.name):
-                            setattr(row, self.name, new_val)
-                            row.save()
-                except Exception, e:
-                    raise e
-                finally:  ## Put the unlock in a 'finally' block so that it always happens
-                    self._derived_reentrant_lock = False
-            getter_fn.connect(handler)
+                def handler(key_set, **kwargs):
+                    assert len(key_set) <= 1, "Error, getter function seems to be cached against more than one argument: %s" % (repr(key_set))
+
+                    assert (not self._derived_reentrant_lock), "Trigger cycle detected (A updates B updates C updates A updates B updates ...)!  Aborting to prevent infinite loop."
+                    self._derived_reentrant_lock = True
+
+                    try:
+                        if len(key_set) == 0:
+                            ## Ok then, the whole cache got dumped; full reset time!
+                            for elt in self.model.objects.all():
+                                new_val = getter_fn(elt)
+                                if new_val != getattr(elt, self.name):
+                                    setattr(elt, self.name, new_val)
+                                    elt.save()
+                    
+                        else:
+                            ## TODO: The following test doesn't actually work; self.model claims to be an instance of ModelBase, even though we seem to be able to query it
+                            #item = list(key_set.values())[0]
+                            #assert type(item) == type(self.model), "Error, passed an item of type %s into a cache-function that only accepts items of type %s" % (str(type(item)), str(type(self.model)))
+                            row = self.model.objects.get(id=list(key_set.values())[0].id)  ## Get a new instance of this model, so that we don't have to worry about unsaved data in other fields
+                            new_val = getter_fn(row)
+                            if new_val != getattr(row, self.name):
+                                setattr(row, self.name, new_val)
+                                row.save()
+                    except Exception as e:
+                        raise e
+                    finally:  ## Put the unlock in a 'finally' block so that it always happens
+                        self._derived_reentrant_lock = False
+                getter_fn.connect(handler)
 
         # Make Django think we're in the FieldCls for the purpose of migrations
         def deconstruct(self):
-            name, path, args, kwargs = super(NewCls, self).deconstruct()
-            path = "%s.%s" % (FieldCls.__module__, FieldCls.__name__)
+            name, path, args, kwargs = super().deconstruct()
+            # Use the shortest valid import path, matching what Django writes in migrations
+            import django.db.models as models_module
+            if hasattr(models_module, FieldCls.__name__):
+                path = "django.db.models.%s" % FieldCls.__name__
+            else:
+                path = "%s.%s" % (FieldCls.__module__, FieldCls.__qualname__)
             return name, path, args, kwargs
 
     return NewCls

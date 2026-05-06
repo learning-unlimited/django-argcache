@@ -55,7 +55,7 @@ def warn_if_loaded(subject=DEFAULT_SUBJECT, message=DEFAULT_MESSAGE):
         message += '\n--------\n'
         for line in traceback.format_stack():
             message += line
-        print message
+        print(message)
         mail_admins(subject, message, fail_silently=True)
         return True
     return False

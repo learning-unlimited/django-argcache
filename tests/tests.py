@@ -469,7 +469,7 @@ class CacheViewTests(TestCase):
         self.assertContains(resp, 'get_calls')
 
         # XX: lazy brittle hack to get the first link appearing after get_calls
-        _, s = resp.content.split('get_calls')
+        _, s = resp.content.decode('utf-8').split('get_calls')
         _, s = s.split('<a href="', 1)
         s, _ = s.split('">Flush</a>', 1)
         flush_url = s

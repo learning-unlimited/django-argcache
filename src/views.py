@@ -1,4 +1,3 @@
-
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -23,8 +22,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .registry import all_caches
-from django.shortcuts import redirect, render_to_response
-from django.core.urlresolvers import reverse
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 
@@ -34,7 +33,7 @@ def view_all(request):
         return HttpResponseForbidden()
     caches = sorted(all_caches, key=lambda c: c.name)
     cache_data = [{'pretty_name': cache.pretty_name, 'hit_count': cache.hit_count, 'miss_count': cache.miss_count} for cache in caches]
-    return render_to_response('argcache/view_all.html', {'caches': cache_data})
+    return render(request, 'argcache/view_all.html', {'caches': cache_data})
 
 @login_required
 def flush(request, cache_id):

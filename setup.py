@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-argcache',
-    version='0.1',
+    version='0.2.3',
     license='AGPLv3',
     description='A function-level caching and invalidaton framework for Django.',
     long_description=README,
@@ -21,11 +21,11 @@ setup(
         'argcache.extras',
     ],
     package_dir={
-        'argcache': 'src'
+        'argcache': 'src',
     },
     include_package_data=True,
     install_requires=[
-        'django>=1.7',
+        'django>=3.0',
     ],
     classifiers=[
         'Environment :: Web Environment',

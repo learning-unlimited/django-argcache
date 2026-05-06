@@ -26,7 +26,6 @@ import inspect
 
 from django.db.models import Model
 from django.db.models.query import QuerySet
-from django.contrib.auth.models import AnonymousUser
 
 from .utils import force_str
 
@@ -44,7 +43,7 @@ def get_containing_class():
 def describe_func(func, class_name=None):
     if hasattr(func, 'im_class'):
         # I don't think we actually hit this case... this is only for bound/unbound member functions
-        return '%s.%s' % (describe_class(func.im_class), func.__name__)
+        return '%s.%s' % (describe_class(func.__self__.__class__), func.__name__)
     else:
         if class_name is None:
             return '%s.%s' % (func.__module__.rstrip('.'), func.__name__)
@@ -58,13 +57,10 @@ def marinade_dish(arg):
     if isinstance(arg, list):
         return '[%s]' % ','.join([marinade_dish(item) for item in arg])
     if isinstance(arg, Model):
-        # ESPUsers are also instances of AnonymousUser, but might not be
-        # anonymous.
-        if arg.id is None and (not isinstance(arg, AnonymousUser) or
-                               not arg.is_anonymous()):
+        if arg.id is None:
             import random
             # TODO: Make this log something
-            print "PASSING UNSAVED MODEL!!! ERROR!!! CACHING CODE SHOULD NOT BE ENABLED!!!"
+            print("PASSING UNSAVED MODEL!!! ERROR!!! CACHING CODE SHOULD NOT BE ENABLED!!!")
             # Do the right thing anyway
             return str(random.randint(0,999999))
         return str(arg.id)

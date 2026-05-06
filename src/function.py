@@ -50,8 +50,7 @@ class ArgCacheDecorator(ArgCache):
             return functools.partial(cls, spec=spec, **kwargs)
         else:
             # Actually applying the decorator
-            return super(ArgCacheDecorator, cls).__new__(
-                cls, func_or_spec, spec=spec, **kwargs)
+            return super(ArgCacheDecorator, cls).__new__(cls)
 
     def __init__(self, func, spec=None, **kwargs):
         """ Wrap func in a ArgCache. """
@@ -69,7 +68,10 @@ class ArgCacheDecorator(ArgCache):
         containing_class = kwargs.pop('containing_class', get_containing_class())
         extra_name = kwargs.pop('extra_name', '')
         name = describe_func(func, containing_class) + extra_name
-        params, varargs, keywords, _ = inspect.getargspec(func)
+        argspec = inspect.getfullargspec(func)
+        params = argspec.args
+        varargs = argspec.varargs
+        keywords = argspec.varkw
         if varargs is not None:
             raise ESPError("ArgCache does not support varargs.")
         if keywords is not None:
@@ -115,7 +117,9 @@ class ArgCacheDecorator(ArgCache):
     # make bound member functions work...
     def __get__(self, obj, objtype=None):
         """ Python member functions are such hacks... :-D """
-        return types.MethodType(self, obj, objtype)
+        if obj is None:
+            return self
+        return types.MethodType(self, obj)
 
 
 # This is a bit more of a decorator-style name

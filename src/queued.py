@@ -31,7 +31,7 @@ pending_lookups = {}
 
 def add_lazy_dependency(self, obj, operation):
     """ If obj is a function (thunk), delay operation; otherwise execute immediately. """
-    if isinstance(obj, basestring):
+    if isinstance(obj, str):
         app_label, model_name = obj.split(".")
         try:
             # This is a private API, please fix it!
