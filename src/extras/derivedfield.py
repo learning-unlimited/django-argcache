@@ -143,5 +143,6 @@ def DerivedField(FieldCls, getter_fn):
                 path = "django.db.models.%s" % FieldCls.__name__
             else:
                 path = "%s.%s" % (FieldCls.__module__, FieldCls.__qualname__)
+            return name, path, args, kwargs
 
     return NewCls
