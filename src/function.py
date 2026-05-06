@@ -1,6 +1,4 @@
 """ Decorator to automatically add a cache to a function. """
-from __future__ import absolute_import
-from __future__ import unicode_literals
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"

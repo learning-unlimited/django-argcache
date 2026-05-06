@@ -1,7 +1,5 @@
 """ General object with queuable actions. """
-from __future__ import absolute_import
-from __future__ import unicode_literals
-import six
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -34,7 +32,7 @@ pending_lookups = {}
 
 def add_lazy_dependency(self, obj, operation):
     """ If obj is a function (thunk), delay operation; otherwise execute immediately. """
-    if isinstance(obj, six.string_types):
+    if isinstance(obj, str):
         app_label, model_name = obj.split(".")
         try:
             # This is a private API, please fix it!

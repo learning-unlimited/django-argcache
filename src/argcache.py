@@ -1,10 +1,5 @@
 """ Bulk-deletable cache objects. """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
-import six
-from six.moves import filter
-from six.moves import zip
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -40,7 +35,6 @@ from .marinade import marinade_dish
 from .registry import register_cache
 from .sad_face import warn_if_loaded
 from .signals import cache_deleted
-import six
 
 __all__ = ['ArgCache']
 
@@ -231,7 +225,7 @@ class ArgCache(object):
 
     def key(self, arg_list):
         """ Returns a cache key, given a list of arguments. """
-        return self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), six.binary_type) else marinade_dish(arg) for arg in arg_list])
+        return self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), bytes) else marinade_dish(arg) for arg in arg_list])
 
     def _token_keys(self, arg_list):
         """ Returns a list of keys to grab for all the tokens. """
@@ -452,7 +446,7 @@ class ArgCache(object):
             return
         if filter is None:
             filter = lambda instance: True
-        if isinstance(selector, str) or isinstance(selector, six.text_type):
+        if isinstance(selector, str):
             # Special-case this
             selector_str = selector
             selector = lambda instance: {selector_str: instance}
@@ -495,7 +489,7 @@ class ArgCache(object):
         # HACK: allow cached methods of models to be specified as strings
         # "app.Model.method"
         method_name = None
-        if isinstance(cache_obj, six.string_types):
+        if isinstance(cache_obj, str):
             cache_obj, method_name = cache_obj.rsplit(".", 1)
         def resolve_depend_on_cache(cache_obj):
             if method_name is not None:

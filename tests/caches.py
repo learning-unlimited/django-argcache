@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 import time
 from argcache.function import cache_function, depend_on_cache
 from argcache.key_set import wildcard

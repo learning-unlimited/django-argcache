@@ -1,8 +1,5 @@
 """ Converts a set of arguments to a string """
-from __future__ import absolute_import
-from __future__ import print_function
-from __future__ import unicode_literals
-import six
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -59,7 +56,7 @@ def marinade_dish(arg):
     if isinstance(arg, QuerySet):
         return marinade_dish(list(arg))
     if isinstance(arg, list):
-        return '[%s]' % ','.join([marinade_dish(item).decode('UTF-8') if isinstance(marinade_dish(item), six.binary_type) else marinade_dish(item) for item in arg])
+        return '[%s]' % ','.join([marinade_dish(item).decode('UTF-8') if isinstance(marinade_dish(item), bytes) else marinade_dish(item) for item in arg])
     if isinstance(arg, Model):
         if arg.id is None:
             import random

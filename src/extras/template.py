@@ -1,5 +1,4 @@
-from __future__ import unicode_literals
-from __future__ import absolute_import
+
 __author__    = "Individual contributors (see AUTHORS file)"
 __date__      = "$DATE$"
 __rev__       = "$REV$"
@@ -32,7 +31,6 @@ from django.template.base import Template
 from django.template.library import parse_bits, InclusionNode
 
 from django.utils.itercompat import is_iterable
-import six
 
 from .. import cache_function
 from ..key_set import is_wildcard
@@ -234,7 +232,7 @@ def cache_inclusion_tag(register, filename, takes_context=False, name=None):
                         t = self.filename
                     elif isinstance(getattr(self.filename, 'template', None), Template):
                         t = self.filename.template
-                    elif not isinstance(self.filename, six.string_types) and is_iterable(self.filename):
+                    elif not isinstance(self.filename, str) and is_iterable(self.filename):
                         t = context.template.engine.select_template(self.filename)
                     else:
                         t = context.template.engine.get_template(self.filename)
@@ -247,7 +245,7 @@ def cache_inclusion_tag(register, filename, takes_context=False, name=None):
                 # require using a plain Context, and copy a whitelisted set of
                 # attrs over, rather than using copy().
                 new_context = Context(_dict)
-                for attr, val in six.iteritems(context_attrs):
+                for attr, val in context_attrs.items():
                     setattr(new_context, attr, val)
                 new_context.render_context = copy(context.render_context)
                 # CHANGED: removed copying the csrf_token over to the
