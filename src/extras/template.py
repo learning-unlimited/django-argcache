@@ -29,7 +29,6 @@ from inspect import getargspec
 from django.template import Context
 from django.template.base import generic_tag_compiler, TagHelperNode, Template
 from django.utils.itercompat import is_iterable
-from django.utils import six
 
 from .. import cache_function
 from ..key_set import is_wildcard
@@ -230,7 +229,7 @@ def cache_inclusion_tag(register, file_name, takes_context=False, name=None):
                         t = file_name
                     elif isinstance(getattr(file_name, 'template', None), Template):
                         t = file_name.template
-                    elif not isinstance(file_name, six.string_types) and is_iterable(file_name):
+                    elif not isinstance(file_name, str) and is_iterable(file_name):
                         t = context.template.engine.select_template(file_name)
                     else:
                         t = context.template.engine.get_template(file_name)
