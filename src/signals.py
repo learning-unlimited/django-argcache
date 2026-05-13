@@ -32,4 +32,4 @@ from django.dispatch import Signal
 ### table_dirty = Signal()
 
 """ Emitted when a cache is deleted. """
-cache_deleted = Signal(providing_args=['key_set'])
+cache_deleted = Signal()

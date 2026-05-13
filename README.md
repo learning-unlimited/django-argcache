@@ -31,7 +31,9 @@ INSTALLED_APPS = (
 Include the argcache URLconf in your project urls.py:
 
 ```
-url(r'^cache/', include('argcache.urls')),
+from django.urls import include, re_path
+
+re_path(r'^cache/', include('argcache.urls')),
 ```
 
 If your apps define any cached functions that aren't automatically
