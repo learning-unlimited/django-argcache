@@ -1,3 +1,4 @@
+from django.core.cache import cache, CacheKeyWarning
 from django.test import TestCase
 from django.test.client import Client
 from django.contrib.auth.models import User
@@ -5,6 +6,7 @@ from django.template import Template, Context
 
 import unittest
 import threading
+import warnings
 
 from argcache import registry, queued
 from .caches import (get_calls, get_calls_reset, get_squared_calls,
@@ -613,6 +615,87 @@ class DerivedFieldTest(TestCase):
         with self.assertNumQueries(1):
             reporters = list(Reporter.objects.order_by('backward_name'))
         self.assertEqual([reporter.pk for reporter in reporters], [1, 3, 2])
+
+
+class CacheKeySafetyTest(TestCase):
+    """
+    Cache keys have to satisfy memcached's constraints: no spaces or control
+    characters, and at most 250 bytes. Django's cache backends check this and
+    raise CacheKeyWarning when a key would break, so these tests promote that
+    warning to an error and then exercise the code paths that build keys.
+
+    See Github #8.
+    """
+
+    def setUp(self):
+        # The cache outlives an individual test, and these tests deliberately
+        # cache values under arguments that other tests use too, so start from
+        # a clean cache and leave a clean one behind.
+        cache.clear()
+        self.reporter = Reporter.objects.create(
+            pk=1, first_name='John', last_name='Doe')
+        self.article = Article.objects.create(
+            pk=1, headline='Breaking News', content='Lorem ipsum',
+            reporter=self.reporter)
+
+    def tearDown(self):
+        cache.clear()
+        get_calls_reset()
+        counter[0] = 0
+
+    def assertNoCacheKeyWarnings(self, func):
+        """ Run func, failing if it produces a CacheKeyWarning. """
+        with warnings.catch_warnings():
+            warnings.simplefilter('error', CacheKeyWarning)
+            func()
+
+    def test_awkward_arguments(self):
+        """ Arguments that have no business appearing in a raw memcached key. """
+        get_calls_reset()
+
+        def exercise():
+            for arg in [
+                'a key with spaces',
+                'control\tchars\nand\x00nulls',
+                frozenset([2.0, 3.0]),
+                {'braces': 'and quotes'},
+                ['a b', 'c d'],
+                (1, 2, 3),
+                None,
+                'a' * 500,
+                u'\xc5ngstrom',
+            ]:
+                # once for the cache-miss path, once for the cache-hit path
+                get_calls(arg)
+                get_calls(arg)
+
+        self.assertNoCacheKeyWarnings(exercise)
+
+    def test_model_arguments_and_invalidation(self):
+        """ Cached methods, plus the token keys used to expire them. """
+        def exercise():
+            self.assertEqual(self.article.num_comments(), 0)
+            self.reporter.full_name()
+            self.reporter.articles_with_headline('a headline with spaces')
+            # Saving a Comment expires the cache, which builds token keys and
+            # then deletes them.
+            Comment.objects.create(pk=1, article=self.article)
+            self.assertEqual(self.article.num_comments(), 1)
+            # delete_all() goes through the global token.
+            Article.num_comments.delete_all()
+            self.assertEqual(self.article.num_comments(), 1)
+
+        self.assertNoCacheKeyWarnings(exercise)
+
+    def test_cached_inclusion_tag(self):
+        """ The inclusion tag produced the longest, ugliest keys of all. """
+        t = Template("{% load test_tags %}{% silly_inclusion_tag arg %}")
+
+        def exercise():
+            t.render(Context({'arg': 'a value with spaces'}))
+            t.render(Context({'arg': 'a value with spaces'}))
+
+        self.assertNoCacheKeyWarnings(exercise)
 
 
 class CacheConcurrencyTest(TestCase):

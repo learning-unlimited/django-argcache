@@ -56,7 +56,7 @@ def marinade_dish(arg):
     if isinstance(arg, QuerySet):
         return marinade_dish(list(arg))
     if isinstance(arg, list):
-        return '[%s]' % ','.join([marinade_dish(item).decode('UTF-8') if isinstance(marinade_dish(item), bytes) else marinade_dish(item) for item in arg])
+        return '[%s]' % ','.join([marinade_dish_str(item) for item in arg])
     if isinstance(arg, Model):
         if arg.id is None:
             import random
@@ -70,3 +70,15 @@ def marinade_dish(arg):
     if hasattr(arg, '__marinade__'):
         return arg.__marinade__()
     return force_str(arg)
+
+def marinade_dish_str(arg):
+    """ marinade_dish(), normalized to a str.
+
+    marinade_dish() falls back to force_str(), which hands back bytes for
+    anything that wasn't already a str, so callers that need to join
+    marinaded arguments together go through this instead.
+    """
+    dish = marinade_dish(arg)
+    if isinstance(dish, bytes):
+        return dish.decode('UTF-8')
+    return dish
