@@ -24,14 +24,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 def force_str(x):
     """
-    Forces x to a str, encoding via utf8 if needed.
+    Forces x to a str.
 
-    >>> force_str('\\xc3\\x85ngstrom')
-    '\\xc3\\x85ngstrom'
-    >>> force_str(u'\\xc5ngstrom')
-    '\\xc3\\x85ngstrom'
+    >>> force_str('\\xc5ngstrom')
+    '\\xc5ngstrom'
+    >>> force_str(5)
+    '5'
 
     """
     if isinstance(x, str):
         return x
-    return str(x).encode('utf8')
+    return str(x)

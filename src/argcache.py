@@ -31,7 +31,7 @@ from django.conf import settings
 from .queued import add_lazy_dependency
 from .cache_token import Token, SingleEntryToken
 from .key_set import specifies_key, token_list_for
-from .marinade import marinade_dish
+from .marinade import hash_key
 from .registry import register_cache
 from .sad_face import warn_if_loaded
 from .signals import cache_deleted
@@ -225,7 +225,7 @@ class ArgCache(object):
 
     def key(self, arg_list):
         """ Returns a cache key, given a list of arguments. """
-        return self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), bytes) else marinade_dish(arg) for arg in arg_list])
+        return hash_key(self.name, arg_list)
 
     def _token_keys(self, arg_list):
         """ Returns a list of keys to grab for all the tokens. """

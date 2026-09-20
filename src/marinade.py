@@ -23,6 +23,7 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import hashlib
 import inspect
 
 from django.db.models import Model
@@ -56,7 +57,7 @@ def marinade_dish(arg):
     if isinstance(arg, QuerySet):
         return marinade_dish(list(arg))
     if isinstance(arg, list):
-        return '[%s]' % ','.join([marinade_dish(item).decode('UTF-8') if isinstance(marinade_dish(item), bytes) else marinade_dish(item) for item in arg])
+        return '[%s]' % ','.join([marinade_dish(item) for item in arg])
     if isinstance(arg, Model):
         if arg.id is None:
             import random
@@ -70,3 +71,14 @@ def marinade_dish(arg):
     if hasattr(arg, '__marinade__'):
         return arg.__marinade__()
     return force_str(arg)
+
+def hash_key(name, args):
+    """ Returns a memcached-safe cache key for name, given its arguments.
+
+    Marinaded arguments can contain spaces, control characters and
+    arbitrarily long values, none of which memcached accepts, and names
+    can get long too (cached inclusion tags especially). So the whole
+    thing is hashed, which makes every key 64 hex characters.
+    """
+    raw = name + '|' + ':'.join([marinade_dish(arg) for arg in args])
+    return hashlib.sha256(raw.encode('utf-8')).hexdigest()

@@ -37,3 +37,15 @@ MIDDLEWARE = [
 ]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+# Set ARGCACHE_TEST_MEMCACHED to a memcached address (host:port) to run the
+# suite against it. The default locmem backend only warns about keys that
+# memcached can't store; the memcached backends reject them outright.
+MEMCACHED_LOCATION = os.environ.get('ARGCACHE_TEST_MEMCACHED')
+if MEMCACHED_LOCATION:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
+            'LOCATION': MEMCACHED_LOCATION,
+        }
+    }

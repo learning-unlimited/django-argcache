@@ -27,7 +27,7 @@ import random
 
 from django.core.cache import cache
 
-from .marinade import marinade_dish
+from .marinade import hash_key
 from .key_set import has_wildcard, specifies_key
 
 __all__ = ['Token', 'ExternalToken']
@@ -92,7 +92,9 @@ class Token(object):
 
     def key_filt(self, filt):
         """ Given filtered arguments, returns a key."""
-        return 'TOKEN__' + self.name + '|' + ':'.join([marinade_dish(arg).decode('UTF-8') if isinstance(marinade_dish(arg), bytes) else marinade_dish(arg) for arg in filt])
+        # The global token shares its name with its cache, so the prefix
+        # is what keeps token keys apart from value keys.
+        return 'TOKEN__' + hash_key(self.name, filt)
 
     def delete_key_set(self, key_set, send_signal=True):
         """ Given a filtered set of arguments, deletes things. """
