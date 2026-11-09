@@ -21,6 +21,9 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+import threading
+
+
 def DerivedField(FieldCls, getter_fn):
     """
     Returns a Django Model Field that is derived, ie., that is
@@ -93,7 +96,7 @@ def DerivedField(FieldCls, getter_fn):
     class NewCls(FieldCls):
         """ Wrapper class for the %s model-field, giving a field that is automatically updated """ % FieldCls.__name__
         ## Lock to prevent reentrancy on our handler function
-        _derived_reentrant_lock = False
+        _derived_tls = threading.local()  # per-thread re-entrancy guard
         _handler_registered = False
 
         def contribute_to_class(self, cls, name, **kwargs):
@@ -106,8 +109,8 @@ def DerivedField(FieldCls, getter_fn):
                 def handler(key_set, **kwargs):
                     assert len(key_set) <= 1, "Error, getter function seems to be cached against more than one argument: %s" % (repr(key_set))
 
-                    assert (not self._derived_reentrant_lock), "Trigger cycle detected (A updates B updates C updates A updates B updates ...)!  Aborting to prevent infinite loop."
-                    self._derived_reentrant_lock = True
+                    assert (not getattr(self._derived_tls, 'locked', False)), "Trigger cycle detected (A updates B updates C updates A updates B updates ...)!  Aborting to prevent infinite loop."
+                    self._derived_tls.locked = True
 
                     try:
                         if len(key_set) == 0:
@@ -130,7 +133,7 @@ def DerivedField(FieldCls, getter_fn):
                     except Exception as e:
                         raise e
                     finally:  ## Put the unlock in a 'finally' block so that it always happens
-                        self._derived_reentrant_lock = False
+                        self._derived_tls.locked = False
                 getter_fn.connect(handler)
 
         # Make Django think we're in the FieldCls for the purpose of migrations

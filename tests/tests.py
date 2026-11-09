@@ -1,5 +1,6 @@
 from django.core.cache import CacheKeyWarning
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
+from django.db import connection
 from django.test.client import Client
 from django.contrib.auth.models import User
 from django.template import Template, Context
@@ -698,6 +699,57 @@ class CacheKeySafetyTest(TestCase):
             t.render(Context({'arg': 'a value with spaces'}))
 
         self.assertNoCacheKeyWarnings(exercise)
+
+
+class DerivedFieldThreadSafetyTest(TransactionTestCase):
+    """
+    The re-entrancy guard in DerivedField must be per-thread: two threads
+    refreshing derived fields for different rows at the same time are not a
+    trigger cycle.
+    """
+    def setUp(self):
+        Reporter.objects.create(pk=1, first_name='John', last_name='Doe')
+        Reporter.objects.create(pk=2, first_name='Jane', last_name='Roe')
+
+    def test_concurrent_derived_updates_are_not_a_trigger_cycle(self):
+        getter = Reporter.get_backward_name
+        original_func = getter.func
+        # Each thread blocks inside the derived-field handler until the other
+        # thread is inside it too, so the two handler calls must overlap.
+        both_inside = threading.Barrier(2, timeout=5)
+
+        # Must keep the same signature as the original: argcache inspects it.
+        def slow_func(self):
+            try:
+                both_inside.wait()
+            except threading.BrokenBarrierError:
+                pass
+            return original_func(self)
+
+        errors = []
+
+        def refresh(reporter):
+            try:
+                # Invalidates the cached value, which fires the DerivedField
+                # handler for this reporter.
+                getter.delete_key_set({'self': reporter})
+            except Exception as e:
+                errors.append(e)
+            finally:
+                connection.close()
+
+        reporters = list(Reporter.objects.order_by('pk'))
+        getter.func = slow_func
+        try:
+            threads = [threading.Thread(target=refresh, args=(r,)) for r in reporters]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+        finally:
+            getter.func = original_func
+
+        self.assertEqual(errors, [])
 
 
 class CacheConcurrencyTest(TestCase):
